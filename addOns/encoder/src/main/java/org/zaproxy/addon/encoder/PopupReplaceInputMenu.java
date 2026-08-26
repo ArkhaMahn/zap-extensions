@@ -46,16 +46,12 @@ public class PopupReplaceInputMenu extends ExtensionPopupMenuItem {
     public boolean isEnableForComponent(Component invoker) {
         if (invoker instanceof JTextComponent
                 && !((JTextComponent) invoker).getText().isEmpty()
-                && isInvokerRelevant(invoker)) {
+                && EncodeDecodeDialog.isInvokerFromEncodeDecodeResult(invoker)) {
             lastInvoker = (JTextComponent) invoker;
             return true;
         }
 
         lastInvoker = null;
         return false;
-    }
-
-    private static boolean isInvokerRelevant(Component invoker) {
-        return EncodeDecodeDialog.ENCODE_DECODE_RESULTFIELD.equals(invoker.getName());
     }
 }

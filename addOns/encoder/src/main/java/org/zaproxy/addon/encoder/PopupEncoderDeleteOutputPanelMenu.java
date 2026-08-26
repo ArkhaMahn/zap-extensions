@@ -27,7 +27,7 @@ import org.parosproxy.paros.extension.ExtensionPopupMenuItem;
 public class PopupEncoderDeleteOutputPanelMenu extends ExtensionPopupMenuItem {
 
     private static final long serialVersionUID = 1L;
-    private JTextComponent lastInvoker = null;
+    private volatile JTextComponent lastInvoker = null;
 
     public PopupEncoderDeleteOutputPanelMenu() {
         super(Constant.messages.getString("encoder.popup.delete"));
@@ -49,7 +49,8 @@ public class PopupEncoderDeleteOutputPanelMenu extends ExtensionPopupMenuItem {
 
     @Override
     public boolean isEnableForComponent(Component invoker) {
-        if (invoker instanceof JTextComponent && isInvokerFromEncodeDecode(invoker)) {
+        if (invoker instanceof JTextComponent
+                && EncodeDecodeDialog.isInvokerFromEncodeDecodeResult(invoker)) {
             setEnabled(true);
             setLastInvoker((JTextComponent) invoker);
             return true;
@@ -57,12 +58,5 @@ public class PopupEncoderDeleteOutputPanelMenu extends ExtensionPopupMenuItem {
 
         setLastInvoker(null);
         return false;
-    }
-
-    private boolean isInvokerFromEncodeDecode(Component invoker) {
-        if (invoker.getName() == null) {
-            return false;
-        }
-        return invoker.getName().equals(EncodeDecodeDialog.ENCODE_DECODE_RESULTFIELD);
     }
 }

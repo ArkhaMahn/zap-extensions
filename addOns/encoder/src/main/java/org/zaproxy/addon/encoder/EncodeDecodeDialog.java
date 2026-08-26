@@ -71,6 +71,22 @@ public class EncodeDecodeDialog extends AbstractFrame implements OptionsChangedL
 
     public static final String ENCODE_DECODE_FIELD = "EncodeDecodeInputField";
     public static final String ENCODE_DECODE_RESULTFIELD = "EncodeDecodeResultField";
+
+    /** Returns true if the component is from the Encode/Decode dialog (input or result field). */
+    public static boolean isInvokerFromEncodeDecode(java.awt.Component invoker) {
+        if (invoker == null || invoker.getName() == null) {
+            return false;
+        }
+        return ENCODE_DECODE_FIELD.equals(invoker.getName())
+                || ENCODE_DECODE_RESULTFIELD.equals(invoker.getName());
+    }
+
+    /** Returns true if the component is the result field of the Encode/Decode dialog. */
+    public static boolean isInvokerFromEncodeDecodeResult(java.awt.Component invoker) {
+        return invoker != null
+                && invoker.getName() != null
+                && ENCODE_DECODE_RESULTFIELD.equals(invoker.getName());
+    }
     private static final long serialVersionUID = 1L;
     private static final Logger LOGGER = LogManager.getLogger(EncodeDecodeDialog.class);
     private final EncodeDecodeProcessors encodeDecodeProcessors;

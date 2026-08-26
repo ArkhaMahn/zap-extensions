@@ -86,7 +86,8 @@ public class PopupEncoderMenu extends ExtensionPopupMenu {
 
     @Override
     public boolean isEnableForComponent(Component invoker) {
-        if (invoker instanceof JTextComponent && !isInvokerFromEncodeDecode(invoker)) {
+        if (invoker instanceof JTextComponent
+                && !EncodeDecodeDialog.isInvokerFromEncodeDecode(invoker)) {
             JTextComponent txt = (JTextComponent) invoker;
             String sel = txt.getSelectedText();
             this.setEnabled(!(sel == null || sel.length() == 0));
@@ -96,15 +97,6 @@ public class PopupEncoderMenu extends ExtensionPopupMenu {
 
         setLastInvoker(null);
         return false;
-    }
-
-    private boolean isInvokerFromEncodeDecode(Component invoker) {
-        if (invoker.getName() == null) {
-            return false;
-        }
-
-        return invoker.getName().equals(EncodeDecodeDialog.ENCODE_DECODE_FIELD)
-                || invoker.getName().equals(EncodeDecodeDialog.ENCODE_DECODE_RESULTFIELD);
     }
 
     @Override
