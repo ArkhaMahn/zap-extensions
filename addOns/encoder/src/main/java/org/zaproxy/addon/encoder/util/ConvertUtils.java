@@ -30,7 +30,6 @@ import java.util.Base64;
 /** Character-set and text conversion helpers for the Encoder add-on. */
 public final class ConvertUtils {
 
-    private static final char[] HEX = "0123456789abcdef".toCharArray();
     private static final Charset UTF_32LE = Charset.forName("UTF-32LE");
     private static final Charset UTF_32BE = Charset.forName("UTF-32BE");
     private static final Charset UTF_32 = Charset.forName("UTF-32");
@@ -150,27 +149,27 @@ public final class ConvertUtils {
     }
 
     public static String utf8(String text) {
-        return toHex(text.getBytes(StandardCharsets.UTF_8));
+        return EncodeDecodeUtils.hex(text.getBytes(StandardCharsets.UTF_8));
     }
 
     public static String utf16Le(String text) {
-        return toHex(text.getBytes(StandardCharsets.UTF_16LE));
+        return EncodeDecodeUtils.hex(text.getBytes(StandardCharsets.UTF_16LE));
     }
 
     public static String utf16Be(String text) {
-        return toHex(text.getBytes(StandardCharsets.UTF_16BE));
+        return EncodeDecodeUtils.hex(text.getBytes(StandardCharsets.UTF_16BE));
     }
 
     public static String utf32Le(String text) {
-        return toHex(text.getBytes(UTF_32LE));
+        return EncodeDecodeUtils.hex(text.getBytes(UTF_32LE));
     }
 
     public static String utf32Be(String text) {
-        return toHex(text.getBytes(UTF_32BE));
+        return EncodeDecodeUtils.hex(text.getBytes(UTF_32BE));
     }
 
     public static String utf32(String text) {
-        return toHex(text.getBytes(UTF_32));
+        return EncodeDecodeUtils.hex(text.getBytes(UTF_32));
     }
 
     private static boolean isDirectUtf7(char c) {
@@ -190,13 +189,5 @@ public final class ConvertUtils {
                 || c == '/'
                 || c == ':'
                 || c == '?';
-    }
-
-    private static String toHex(byte[] bytes) {
-        StringBuilder sb = new StringBuilder(bytes.length * 2);
-        for (byte b : bytes) {
-            sb.append(HEX[(b >> 4) & 0xf]).append(HEX[b & 0xf]);
-        }
-        return sb.toString();
     }
 }
