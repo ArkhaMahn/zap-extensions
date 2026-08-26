@@ -33,30 +33,10 @@ public class UnicodeDecoder extends DefaultEncodeDecodeProcessor {
             String value = strTemp.substring(2);
             int c = 0;
             for (int j = 0; j < value.length(); j++) {
-                char tempChar = value.charAt(j);
-                int t = 0;
-                switch (tempChar) {
-                    case 'a':
-                        t = 10;
-                        break;
-                    case 'b':
-                        t = 11;
-                        break;
-                    case 'c':
-                        t = 12;
-                        break;
-                    case 'd':
-                        t = 13;
-                        break;
-                    case 'e':
-                        t = 14;
-                        break;
-                    case 'f':
-                        t = 15;
-                        break;
-                    default:
-                        t = tempChar - 48;
-                        break;
+                int t = Character.digit(value.charAt(j), 16);
+                if (t < 0) {
+                    throw new IllegalArgumentException(
+                            "Invalid hex character at index " + j + ": " + value.charAt(j));
                 }
                 c += t * ((int) Math.pow(16, (value.length() - j - 1)));
             }
