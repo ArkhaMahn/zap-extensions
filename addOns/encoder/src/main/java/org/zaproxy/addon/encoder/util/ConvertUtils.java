@@ -31,6 +31,9 @@ import java.util.Base64;
 public final class ConvertUtils {
 
     private static final char[] HEX = "0123456789abcdef".toCharArray();
+    private static final Charset UTF_32LE = Charset.forName("UTF-32LE");
+    private static final Charset UTF_32BE = Charset.forName("UTF-32BE");
+    private static final Charset UTF_32 = Charset.forName("UTF-32");
 
     private ConvertUtils() {}
 
@@ -159,15 +162,15 @@ public final class ConvertUtils {
     }
 
     public static String utf32Le(String text) {
-        return toHex(text.getBytes(Charset.forName("UTF-32LE")));
+        return toHex(text.getBytes(UTF_32LE));
     }
 
     public static String utf32Be(String text) {
-        return toHex(text.getBytes(Charset.forName("UTF-32BE")));
+        return toHex(text.getBytes(UTF_32BE));
     }
 
     public static String utf32(String text) {
-        return toHex(text.getBytes(Charset.forName("UTF-32")));
+        return toHex(text.getBytes(UTF_32));
     }
 
     private static boolean isDirectUtf7(char c) {

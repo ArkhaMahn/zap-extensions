@@ -65,9 +65,10 @@ public final class HashUtils {
     }
 
     public static String md4(String text) {
+        byte[] data = bytes(text);
         byte[] out = new byte[16];
         MD4Digest digest = new MD4Digest();
-        digest.update(bytes(text), 0, bytes(text).length);
+        digest.update(data, 0, data.length);
         digest.doFinal(out, 0);
         return hex(out);
     }

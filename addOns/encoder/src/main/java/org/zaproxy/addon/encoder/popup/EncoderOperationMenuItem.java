@@ -19,6 +19,8 @@
  */
 package org.zaproxy.addon.encoder.popup;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Supplier;
 import javax.swing.text.JTextComponent;
 import org.apache.logging.log4j.LogManager;
@@ -38,6 +40,13 @@ import org.parosproxy.paros.extension.ExtensionPopupMenuItem;
 public class EncoderOperationMenuItem extends ExtensionPopupMenuItem {
 
     private static final Logger LOGGER = LogManager.getLogger(EncoderOperationMenuItem.class);
+    private static final ExecutorService EXECUTOR =
+            Executors.newCachedThreadPool(
+                    r -> {
+                        Thread t = new Thread(r, "EncoderOperation");
+                        t.setDaemon(true);
+                        return t;
+                    });
 
     private final java.util.function.Function<String, String> operation;
     private final Supplier<JTextComponent> invokerSupplier;
@@ -67,7 +76,7 @@ public class EncoderOperationMenuItem extends ExtensionPopupMenuItem {
             return;
         }
 
-        new Thread(
+        EXECUTOR.execute(
                         () -> {
                             try {
                                 String result = operation.apply(selectedText);
@@ -81,9 +90,7 @@ public class EncoderOperationMenuItem extends ExtensionPopupMenuItem {
                                         e);
                                 showErrorDialog(e);
                             }
-                        },
-                        "EncoderOperation-" + getText())
-                .start();
+                        });
     }
 
     private static void replaceSelection(JTextComponent textComponent, String newText) {

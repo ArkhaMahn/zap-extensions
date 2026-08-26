@@ -50,10 +50,12 @@ public final class Confusables {
 
     private final Map<Integer, String> glyphToAscii;
     private final Map<Integer, Map<String, String>> asciiToGlyph;
+    private final List<String> categories;
 
     private Confusables(Map<Integer, String> glyphToAscii, Map<Integer, Map<String, String>> asciiToGlyph) {
         this.glyphToAscii = glyphToAscii;
         this.asciiToGlyph = asciiToGlyph;
+        this.categories = buildCategories();
     }
 
     public static Confusables getInstance() {
@@ -109,15 +111,19 @@ public final class Confusables {
      * included.
      */
     public List<String> categories() {
-        TreeSet<String> categories = new TreeSet<>();
+        return categories;
+    }
+
+    private List<String> buildCategories() {
+        TreeSet<String> cats = new TreeSet<>();
         for (Map.Entry<Integer, Map<String, String>> entry : asciiToGlyph.entrySet()) {
             int targetCp = entry.getKey();
             if (targetCp >= 0x21 && targetCp <= 0x7e) {
-                categories.addAll(entry.getValue().keySet());
+                cats.addAll(entry.getValue().keySet());
             }
         }
-        categories.remove(CATEGORY_OTHER);
-        categories.remove(CATEGORY_UNKNOWN);
-        return Collections.unmodifiableList(new ArrayList<>(categories));
+        cats.remove(CATEGORY_OTHER);
+        cats.remove(CATEGORY_UNKNOWN);
+        return Collections.unmodifiableList(new ArrayList<>(cats));
     }
 }

@@ -45,7 +45,7 @@ import org.zaproxy.zap.extension.ExtensionPopupMenu;
 public class PopupEncoderMenu extends ExtensionPopupMenu {
 
     private static final long serialVersionUID = 1L;
-    private JTextComponent lastInvoker = null;
+    private volatile JTextComponent lastInvoker = null;
     private final Supplier<JTextComponent> invokerSupplier = () -> lastInvoker;
 
     public PopupEncoderMenu(Runnable dialogAction) {
@@ -55,7 +55,7 @@ public class PopupEncoderMenu extends ExtensionPopupMenu {
         addMouseListener(
                 new MouseAdapter() {
                     @Override
-                    public void mousePressed(MouseEvent e) {
+                    public void mouseClicked(MouseEvent e) {
                         dialogAction.run();
                     }
                 });
