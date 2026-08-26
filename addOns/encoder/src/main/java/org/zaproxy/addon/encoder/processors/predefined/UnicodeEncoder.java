@@ -31,7 +31,6 @@ public class UnicodeEncoder extends DefaultEncodeDecodeProcessor {
         char c;
         int i;
         int j;
-        sb.setLength(0);
         for (i = 0; i < str.length(); i++) {
             c = str.charAt(i);
             sb.append("%u");
