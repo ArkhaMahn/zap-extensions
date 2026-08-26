@@ -19,67 +19,37 @@
  */
 package org.zaproxy.addon.encoder.popup;
 
-import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.function.Function;
+import java.util.function.Supplier;
 import javax.swing.text.JTextComponent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.extension.ExtensionPopupMenuItem;
-import org.zaproxy.zap.extension.httppanel.HttpPanelResponse;
 
 /**
  * A leaf popup menu item that applies an operation to the currently selected text of the invoking
  * {@code JTextComponent} and replaces the selection with the result, keeping the new text selected
  * so that multiple operations can be chained.
+ *
+ * <p>Uses a {@link Supplier} to obtain the invoker from the parent menu, since ZAP only calls
+ * {@code isEnableForComponent} on top-level popup items, not on nested submenu children.
  */
 @SuppressWarnings("serial")
 public class EncoderOperationMenuItem extends ExtensionPopupMenuItem {
 
     private static final Logger LOGGER = LogManager.getLogger(EncoderOperationMenuItem.class);
 
-    private final Function<String, String> operation;
-    private JTextComponent lastInvoker;
+    private final java.util.function.Function<String, String> operation;
+    private final Supplier<JTextComponent> invokerSupplier;
 
-    public EncoderOperationMenuItem(String label, Function<String, String> operation) {
+    public EncoderOperationMenuItem(
+            String label,
+            java.util.function.Function<String, String> operation,
+            Supplier<JTextComponent> invokerSupplier) {
         super(label);
         this.operation = operation;
-        addActionListener(new PerformActionListener());
-    }
-
-    @Override
-    public boolean isEnableForComponent(Component invoker) {
-        if (isInResponseView(invoker)) {
-            lastInvoker = null;
-            return false;
-        }
-        if (invoker instanceof JTextComponent) {
-            JTextComponent textComponent = (JTextComponent) invoker;
-            String selectedText = textComponent.getSelectedText();
-            boolean hasSelection = selectedText != null && !selectedText.isEmpty();
-            setEnabled(hasSelection);
-            if (hasSelection) {
-                lastInvoker = textComponent;
-            }
-            return true;
-        }
-
-        lastInvoker = null;
-        return false;
-    }
-
-    /**
-     * Tells whether the given component is inside the Response view, where the menu is not shown.
-     */
-    private static boolean isInResponseView(Component component) {
-        for (Component c = component; c != null; c = c.getParent()) {
-            if (c instanceof HttpPanelResponse) {
-                return true;
-            }
-        }
-        return false;
+        this.invokerSupplier = invokerSupplier;
+        addActionListener(e -> performAction());
     }
 
     @Override
@@ -88,16 +58,15 @@ public class EncoderOperationMenuItem extends ExtensionPopupMenuItem {
     }
 
     private void performAction() {
-        if (lastInvoker == null) {
+        JTextComponent invoker = invokerSupplier.get();
+        if (invoker == null) {
             return;
         }
-        final JTextComponent invoker = lastInvoker;
         final String selectedText = invoker.getSelectedText();
         if (selectedText == null || selectedText.isEmpty()) {
             return;
         }
 
-        // Some operations (Argon2id, scrypt, bcrypt, ...) are slow, so run off the EDT.
         new Thread(
                         () -> {
                             try {
@@ -143,12 +112,5 @@ public class EncoderOperationMenuItem extends ExtensionPopupMenuItem {
                                                 e.getMessage() == null
                                                         ? e.toString()
                                                         : e.getMessage())));
-    }
-
-    private class PerformActionListener implements ActionListener {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            performAction();
-        }
     }
 }

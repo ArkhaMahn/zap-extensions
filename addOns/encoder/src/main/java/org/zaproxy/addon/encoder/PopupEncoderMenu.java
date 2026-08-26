@@ -23,6 +23,7 @@ import java.awt.Component;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import javax.swing.text.JTextComponent;
 import org.parosproxy.paros.Constant;
 import org.zaproxy.addon.commonlib.MenuWeights;
@@ -44,6 +45,7 @@ public class PopupEncoderMenu extends ExtensionPopupMenu {
 
     private static final long serialVersionUID = 1L;
     private JTextComponent lastInvoker = null;
+    private final Supplier<JTextComponent> invokerSupplier = () -> lastInvoker;
 
     public PopupEncoderMenu(Runnable dialogAction) {
         super(Constant.messages.getString("encoder.tools.menu.encdec"));
@@ -108,7 +110,7 @@ public class PopupEncoderMenu extends ExtensionPopupMenu {
 
     /* ---------------- Encode submenu ---------------- */
 
-    private static List<EncoderOperationMenuItem> encodeItems() {
+    private List<EncoderOperationMenuItem> encodeItems() {
         List<EncoderOperationMenuItem> items = new ArrayList<>();
         items.add(item("encoder.operation.encode.base64", EncodeDecodeUtils::encodeBase64));
         items.add(item("encoder.operation.encode.base64url", EncodeDecodeUtils::encodeBase64Url));
@@ -127,7 +129,7 @@ public class PopupEncoderMenu extends ExtensionPopupMenu {
 
     /* ---------------- Decode submenu ---------------- */
 
-    private static List<EncoderOperationMenuItem> decodeItems() {
+    private List<EncoderOperationMenuItem> decodeItems() {
         List<EncoderOperationMenuItem> items = new ArrayList<>();
         items.add(item("encoder.operation.decode.base64", EncodeDecodeUtils::decodeBase64));
         items.add(item("encoder.operation.decode.base64url", EncodeDecodeUtils::decodeBase64Url));
@@ -146,7 +148,7 @@ public class PopupEncoderMenu extends ExtensionPopupMenu {
 
     /* ---------------- Hash submenu ---------------- */
 
-    private static List<Component> hashItems() {
+    private List<Component> hashItems() {
         List<Component> items = new ArrayList<>();
         items.add(shaSubMenu());
         items.add(mdSubMenu());
@@ -164,7 +166,7 @@ public class PopupEncoderMenu extends ExtensionPopupMenu {
         return items;
     }
 
-    private static EncoderSubMenu shaSubMenu() {
+    private EncoderSubMenu shaSubMenu() {
         List<Component> shaItems = new ArrayList<>();
         shaItems.add(item("encoder.operation.hash.sha1", HashUtils::sha1));
         shaItems.add(item("encoder.operation.hash.sha3", HashUtils::sha3Keccak));
@@ -173,14 +175,14 @@ public class PopupEncoderMenu extends ExtensionPopupMenu {
         return new EncoderSubMenu(msg("encoder.operation.hash.sha"), shaItems);
     }
 
-    private static EncoderSubMenu mdSubMenu() {
+    private EncoderSubMenu mdSubMenu() {
         List<Component> mdItems = new ArrayList<>();
         mdItems.add(item("encoder.operation.hash.md4", HashUtils::md4));
         mdItems.add(item("encoder.operation.hash.md5", HashUtils::md5));
         return new EncoderSubMenu(msg("encoder.operation.hash.md"), mdItems);
     }
 
-    private static EncoderSubMenu blakeSubMenu() {
+    private EncoderSubMenu blakeSubMenu() {
         List<EncoderOperationMenuItem> blakeItems = new ArrayList<>();
         blakeItems.add(item("encoder.operation.hash.blake2", HashUtils::blake2));
         blakeItems.add(item("encoder.operation.hash.blake3", HashUtils::blake3));
@@ -189,7 +191,7 @@ public class PopupEncoderMenu extends ExtensionPopupMenu {
 
     /* ---------------- Convert submenu ---------------- */
 
-    private static List<Component> convertItems() {
+    private List<Component> convertItems() {
         List<Component> items = new ArrayList<>();
         items.add(item("encoder.operation.convert.unicode", ConvertUtils::unicode));
         items.add(utfSubMenu());
@@ -198,7 +200,7 @@ public class PopupEncoderMenu extends ExtensionPopupMenu {
         return items;
     }
 
-    private static EncoderSubMenu utfSubMenu() {
+    private EncoderSubMenu utfSubMenu() {
         List<Component> utfItems = new ArrayList<>();
         utfItems.add(illegalUtf8SubMenu());
         utfItems.add(item("encoder.operation.convert.utf7", ConvertUtils::utf7));
@@ -211,7 +213,7 @@ public class PopupEncoderMenu extends ExtensionPopupMenu {
         return new EncoderSubMenu(msg("encoder.operation.convert.utf"), utfItems);
     }
 
-    private static EncoderSubMenu illegalUtf8SubMenu() {
+    private EncoderSubMenu illegalUtf8SubMenu() {
         List<Component> items = new ArrayList<>();
         items.add(item("encoder.operation.convert.illegalutf8_2", ConvertUtils::illegalUtf82Bytes));
         items.add(item("encoder.operation.convert.illegalutf8_3", ConvertUtils::illegalUtf83Bytes));
@@ -219,20 +221,20 @@ public class PopupEncoderMenu extends ExtensionPopupMenu {
         return new EncoderSubMenu(msg("encoder.operation.convert.illegalutf8"), items);
     }
 
-    private static EncoderSubMenu confusablesSubMenu() {
+    private EncoderSubMenu confusablesSubMenu() {
         Confusables confusables = Confusables.getInstance();
         List<EncoderOperationMenuItem> glyphItems = new ArrayList<>();
         for (String category : confusables.categories()) {
             glyphItems.add(
                     new EncoderOperationMenuItem(
-                            category, text -> confusables.toGlyph(text, category)));
+                            category, text -> confusables.toGlyph(text, category), invokerSupplier));
         }
         return new EncoderSubMenu(msg("encoder.operation.convert.confusables"), glyphItems);
     }
 
     /* ---------------- Helper ---------------- */
 
-    private static EncoderOperationMenuItem item(String key, Function<String, String> op) {
-        return new EncoderOperationMenuItem(msg(key), op);
+    private EncoderOperationMenuItem item(String key, Function<String, String> op) {
+        return new EncoderOperationMenuItem(msg(key), op, invokerSupplier);
     }
 }
