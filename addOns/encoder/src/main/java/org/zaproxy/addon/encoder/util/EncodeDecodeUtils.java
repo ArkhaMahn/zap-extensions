@@ -27,7 +27,7 @@ import java.util.Map;
 /** Encoding and decoding helpers for the Encoder add-on's in-place operations. */
 public final class EncodeDecodeUtils {
 
-    private static final char[] HEX = "0123456789abcdef".toCharArray();
+    static final char[] HEX = "0123456789abcdef".toCharArray();
 
     private static final String UNRESERVED =
             "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.~";
@@ -185,8 +185,16 @@ public final class EncodeDecodeUtils {
 
     /* ---------------- Internals ---------------- */
 
-    private static byte[] bytes(String text) {
+    static byte[] bytes(String text) {
         return text.getBytes(StandardCharsets.UTF_8);
+    }
+
+    static String hex(byte[] bytes) {
+        StringBuilder sb = new StringBuilder(bytes.length * 2);
+        for (byte b : bytes) {
+            sb.append(HEX[(b >> 4) & 0xf]).append(HEX[b & 0xf]);
+        }
+        return sb.toString();
     }
 
     private static String percentEncode(String text, String keep) {
