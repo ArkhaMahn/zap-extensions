@@ -36,8 +36,8 @@ import org.zaproxy.zap.extension.ExtensionPopupMenu;
 import org.zaproxy.zap.view.ZapMenuItem;
 
 /**
- * The "Encode/Decode/Hash..." popup menu. Contains submenus for Encode, Decode, Hash, and Convert
- * (in-place operations) as well as an item to open the Encode/Decode/Hash dialog.
+ * The "Encode/Decode/Hash..." right-click popup menu. Clicking the menu label opens the
+ * Encode/Decode/Hash dialog. The submenus provide in-place encode/decode/hash/convert operations.
  */
 @SuppressWarnings("serial")
 public class PopupEncoderMenu extends ExtensionPopupMenu {
@@ -49,14 +49,15 @@ public class PopupEncoderMenu extends ExtensionPopupMenu {
         super(Constant.messages.getString("encoder.tools.menu.encdec"));
         setWeight(MenuWeights.MENU_ENCODE_WEIGHT);
 
+        ZapMenuItem dialogItem = new ZapMenuItem("encoder.tools.menu.encdec");
+        dialogItem.addActionListener(e -> dialogAction.run());
+        add(dialogItem);
+
+        addSeparator();
         add(new EncoderSubMenu(msg("encoder.operation.popup.encode"), encodeItems()));
         add(new EncoderSubMenu(msg("encoder.operation.popup.decode"), decodeItems()));
         add(new EncoderSubMenu(msg("encoder.operation.popup.hash"), hashItems()));
         add(new EncoderSubMenu(msg("encoder.operation.popup.convert"), convertItems()));
-        addSeparator();
-        ZapMenuItem dialogItem = new ZapMenuItem("encoder.popup.open.dialog");
-        dialogItem.addActionListener(e -> dialogAction.run());
-        add(dialogItem);
     }
 
     private static String msg(String key) {
