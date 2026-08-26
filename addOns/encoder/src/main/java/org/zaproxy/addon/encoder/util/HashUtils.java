@@ -38,78 +38,78 @@ import org.bouncycastle.crypto.params.Argon2Parameters;
 /** Hashing helpers for the Encoder add-on's in-place operations. */
 public final class HashUtils {
 
-    private static final char[] HEX = "0123456789abcdef".toCharArray();
-
     private HashUtils() {}
 
     /* ---------------- Simple digests ---------------- */
 
     public static String sha1(String text) {
-        return jdkDigest("SHA-1", bytes(text));
+        return jdkDigest("SHA-1", EncodeDecodeUtils.bytes(text));
     }
 
     public static String sha256(String text) {
-        return jdkDigest("SHA-256", bytes(text));
+        return jdkDigest("SHA-256", EncodeDecodeUtils.bytes(text));
     }
 
     public static String sha512(String text) {
-        return jdkDigest("SHA-512", bytes(text));
+        return jdkDigest("SHA-512", EncodeDecodeUtils.bytes(text));
     }
 
     public static String md5(String text) {
-        return jdkDigest("MD5", bytes(text));
+        return jdkDigest("MD5", EncodeDecodeUtils.bytes(text));
     }
 
     public static String sha3Keccak(String text) {
-        return keccak(bytes(text));
+        return keccak(EncodeDecodeUtils.bytes(text));
     }
 
     public static String md4(String text) {
-        byte[] data = bytes(text);
+        byte[] data = EncodeDecodeUtils.bytes(text);
         byte[] out = new byte[16];
         MD4Digest digest = new MD4Digest();
         digest.update(data, 0, data.length);
         digest.doFinal(out, 0);
-        return hex(out);
+        return EncodeDecodeUtils.hex(out);
     }
 
     public static String blake2(String text) {
         byte[] out = new byte[32];
         Blake2bDigest digest = new Blake2bDigest(256);
-        digest.update(bytes(text), 0, bytes(text).length);
+        byte[] data = EncodeDecodeUtils.bytes(text);
+        digest.update(data, 0, data.length);
         digest.doFinal(out, 0);
-        return hex(out);
+        return EncodeDecodeUtils.hex(out);
     }
 
     public static String blake3(String text) {
         Blake3 hasher = Blake3.newInstance();
-        hasher.update(bytes(text));
+        hasher.update(EncodeDecodeUtils.bytes(text));
         return hasher.hexdigest();
     }
 
     public static String whirlpool(String text) {
         byte[] out = new byte[64];
         WhirlpoolDigest digest = new WhirlpoolDigest();
-        digest.update(bytes(text), 0, bytes(text).length);
+        byte[] data = EncodeDecodeUtils.bytes(text);
+        digest.update(data, 0, data.length);
         digest.doFinal(out, 0);
-        return hex(out);
+        return EncodeDecodeUtils.hex(out);
     }
 
     /* ---------------- Checksums / non-cryptographic ---------------- */
 
     public static String crc32(String text) {
         java.util.zip.CRC32 crc = new java.util.zip.CRC32();
-        crc.update(bytes(text));
+        crc.update(EncodeDecodeUtils.bytes(text));
         return String.format("%08x", crc.getValue());
     }
 
     public static String murmur3(String text) {
-        return String.format("%08x", murmur3_32(bytes(text), 0));
+        return String.format("%08x", murmur3_32(EncodeDecodeUtils.bytes(text), 0));
     }
 
     public static String fnv1a(String text) {
         long hash = 0xcbf29ce484222325L;
-        for (byte b : bytes(text)) {
+        for (byte b : EncodeDecodeUtils.bytes(text)) {
             hash ^= (b & 0xff);
             hash *= 0x100000001b3L;
         }
@@ -118,7 +118,7 @@ public final class HashUtils {
 
     public static String sipHash(String text) {
         byte[] key = salt(text, 16);
-        byte[] data = bytes(text);
+        byte[] data = EncodeDecodeUtils.bytes(text);
         long k0 = leLong(key, 0);
         long k1 = leLong(key, 8);
         long[] v = {
@@ -161,12 +161,12 @@ public final class HashUtils {
 
     public static String bcrypt(String text) {
         byte[] salt = salt(text, 16);
-        return OpenBSDBCrypt.generate(bytes(text), salt, 10);
+        return OpenBSDBCrypt.generate(EncodeDecodeUtils.bytes(text), salt, 10);
     }
 
     public static String scrypt(String text) {
         byte[] salt = salt(text, 16);
-        byte[] out = SCrypt.generate(bytes(text), salt, 16384, 8, 1, 32);
+        byte[] out = SCrypt.generate(EncodeDecodeUtils.bytes(text), salt, 16384, 8, 1, 32);
         return "$scrypt$ln=14,r=8,p=1$"
                 + Base64.getEncoder().withoutPadding().encodeToString(salt)
                 + "$"
@@ -186,7 +186,7 @@ public final class HashUtils {
         Argon2BytesGenerator generator = new Argon2BytesGenerator();
         generator.init(params);
         byte[] out = new byte[32];
-        generator.generateBytes(bytes(text), out);
+        generator.generateBytes(EncodeDecodeUtils.bytes(text), out);
         return "$argon2id$v=19$m=19456,t=2,p=1$"
                 + Base64.getEncoder().withoutPadding().encodeToString(salt)
                 + "$"
@@ -198,7 +198,7 @@ public final class HashUtils {
         try {
             PBEKeySpec spec = new PBEKeySpec(text.toCharArray(), salt, 10000, 256);
             SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
-            return hex(factory.generateSecret(spec).getEncoded());
+            return EncodeDecodeUtils.hex(factory.generateSecret(spec).getEncoded());
         } catch (Exception e) {
             throw new IllegalArgumentException("PBKDF2 not available", e);
         }
@@ -207,7 +207,7 @@ public final class HashUtils {
     public static String phpass(String text) {
         final String itoa64 = "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
         int countLog2 = 9; // 512 iterations
-        byte[] seed = sha256Bytes(text);
+        byte[] seed = sha256Digest(text);
         StringBuilder saltBuilder = new StringBuilder(8);
         int s = 0;
         for (int i = 0; i < 8; i++) {
@@ -218,7 +218,7 @@ public final class HashUtils {
         byte[] hash = md5Bytes((saltStr + text).getBytes(StandardCharsets.UTF_8));
         int count = 1 << countLog2;
         for (int i = 0; i < count; i++) {
-            hash = md5Bytes(concat(hash, bytes(text)));
+            hash = md5Bytes(concat(hash, EncodeDecodeUtils.bytes(text)));
         }
         return "$P$"
                 + itoa64.charAt(countLog2)
@@ -227,10 +227,6 @@ public final class HashUtils {
     }
 
     /* ---------------- Internals ---------------- */
-
-    private static byte[] bytes(String text) {
-        return text.getBytes(StandardCharsets.UTF_8);
-    }
 
     private static byte[] concat(byte[] a, byte[] b) {
         byte[] out = new byte[a.length + b.length];
@@ -241,19 +237,17 @@ public final class HashUtils {
 
     private static String jdkDigest(String algorithm, byte[] data) {
         try {
-            return hex(MessageDigest.getInstance(algorithm).digest(data));
+            return EncodeDecodeUtils.hex(
+                    MessageDigest.getInstance(algorithm).digest(data));
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalArgumentException("Digest not available: " + algorithm, e);
         }
     }
 
-    private static byte[] sha256Bytes(String text) {
-        return sha256Digest(text);
-    }
-
     private static byte[] sha256Digest(String text) {
         try {
-            return MessageDigest.getInstance("SHA-256").digest(bytes(text));
+            return MessageDigest.getInstance("SHA-256")
+                    .digest(EncodeDecodeUtils.bytes(text));
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException(e);
         }
@@ -272,7 +266,7 @@ public final class HashUtils {
         KeccakDigest digest = new KeccakDigest(256);
         digest.update(data, 0, data.length);
         digest.doFinal(out, 0);
-        return hex(out);
+        return EncodeDecodeUtils.hex(out);
     }
 
     private static byte[] salt(String text, int length) {
@@ -374,13 +368,5 @@ public final class HashUtils {
         h1 *= 0xc2b2ae35;
         h1 ^= h1 >>> 16;
         return h1;
-    }
-
-    private static String hex(byte[] bytes) {
-        StringBuilder sb = new StringBuilder(bytes.length * 2);
-        for (byte b : bytes) {
-            sb.append(HEX[(b >> 4) & 0xf]).append(HEX[b & 0xf]);
-        }
-        return sb.toString();
     }
 }
