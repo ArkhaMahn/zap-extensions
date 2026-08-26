@@ -23,6 +23,7 @@ import java.awt.Frame;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.List;
+import java.util.function.Supplier;
 import javax.swing.ImageIcon;
 import javax.swing.KeyStroke;
 import javax.swing.text.JTextComponent;
@@ -35,6 +36,7 @@ import org.parosproxy.paros.extension.Extension;
 import org.parosproxy.paros.extension.ExtensionAdaptor;
 import org.parosproxy.paros.extension.ExtensionHook;
 import org.parosproxy.paros.view.View;
+import org.zaproxy.addon.encoder.popup.EncoderSubMenu;
 import org.zaproxy.zap.extension.keyboard.ExtensionKeyboard;
 import org.zaproxy.zap.extension.script.ExtensionScript;
 import org.zaproxy.zap.extension.script.ScriptType;
@@ -61,6 +63,10 @@ public class ExtensionEncoder extends ExtensionAdaptor {
     private ScriptType encodeScriptType = null;
     private EncodeDecodeDialog encodeDecodeDialog = null;
     private PopupEncoderMenu popupEncodeMenu = null;
+    private EncoderSubMenu popupEncodeSubMenu;
+    private EncoderSubMenu popupDecodeSubMenu;
+    private EncoderSubMenu popupHashSubMenu;
+    private EncoderSubMenu popupConvertSubMenu;
     private ZapMenuItem toolsMenuEncoder = null;
     private PopupEncoderDeleteOutputPanelMenu popupDeleteOutputMenu;
     private PopupReplaceInputMenu popupReplaceInputMenu;
@@ -108,7 +114,14 @@ public class ExtensionEncoder extends ExtensionAdaptor {
         super.hook(extensionHook);
 
         if (hasView()) {
+            Supplier<JTextComponent> invokerSupplier =
+                    () -> popupEncodeMenu != null ? popupEncodeMenu.getLastInvoker() : null;
+
             extensionHook.getHookMenu().addPopupMenuItem(getPopupMenuEncode());
+            extensionHook.getHookMenu().addPopupMenuItem(getEncodeSubMenu(invokerSupplier));
+            extensionHook.getHookMenu().addPopupMenuItem(getDecodeSubMenu(invokerSupplier));
+            extensionHook.getHookMenu().addPopupMenuItem(getHashSubMenu(invokerSupplier));
+            extensionHook.getHookMenu().addPopupMenuItem(getConvertSubMenu(invokerSupplier));
             extensionHook.getHookMenu().addPopupMenuItem(getPopupMenuDeleteOutputPanel());
             extensionHook.getHookMenu().addToolsMenuItem(getToolsMenuItemEncoder());
             extensionHook.getHookMenu().addPopupMenuItem(getPopupMenuReplaceInput());
@@ -140,6 +153,34 @@ public class ExtensionEncoder extends ExtensionAdaptor {
                     new PopupEncoderMenu(() -> showEncodeDecodeDialog(popupEncodeMenu.getLastInvoker()));
         }
         return popupEncodeMenu;
+    }
+
+    private EncoderSubMenu getEncodeSubMenu(Supplier<JTextComponent> invokerSupplier) {
+        if (popupEncodeSubMenu == null) {
+            popupEncodeSubMenu = EncoderPopupSubMenus.encodeSubMenu(invokerSupplier);
+        }
+        return popupEncodeSubMenu;
+    }
+
+    private EncoderSubMenu getDecodeSubMenu(Supplier<JTextComponent> invokerSupplier) {
+        if (popupDecodeSubMenu == null) {
+            popupDecodeSubMenu = EncoderPopupSubMenus.decodeSubMenu(invokerSupplier);
+        }
+        return popupDecodeSubMenu;
+    }
+
+    private EncoderSubMenu getHashSubMenu(Supplier<JTextComponent> invokerSupplier) {
+        if (popupHashSubMenu == null) {
+            popupHashSubMenu = EncoderPopupSubMenus.hashSubMenu(invokerSupplier);
+        }
+        return popupHashSubMenu;
+    }
+
+    private EncoderSubMenu getConvertSubMenu(Supplier<JTextComponent> invokerSupplier) {
+        if (popupConvertSubMenu == null) {
+            popupConvertSubMenu = EncoderPopupSubMenus.convertSubMenu(invokerSupplier);
+        }
+        return popupConvertSubMenu;
     }
 
     private PopupEncoderDeleteOutputPanelMenu getPopupMenuDeleteOutputPanel() {
