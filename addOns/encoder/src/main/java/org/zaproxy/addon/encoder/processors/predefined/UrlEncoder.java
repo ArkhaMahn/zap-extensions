@@ -20,8 +20,8 @@
 package org.zaproxy.addon.encoder.processors.predefined;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 public class UrlEncoder extends DefaultEncodeDecodeProcessor {
 
@@ -29,17 +29,7 @@ public class UrlEncoder extends DefaultEncodeDecodeProcessor {
 
     @Override
     protected String processInternal(String value) throws IOException {
-        return getURLEncode(value);
-    }
-
-    private String getURLEncode(String msg) {
-        String result = "";
-        try {
-            result = URLEncoder.encode(msg, "UTF8");
-        } catch (UnsupportedEncodingException e) {
-            // Nothing to do
-        }
-        return result;
+        return URLEncoder.encode(value, StandardCharsets.UTF_8);
     }
 
     public static UrlEncoder getSingleton() {
