@@ -19,7 +19,6 @@
  */
 package org.zaproxy.addon.encoder.processors.predefined.utility;
 
-import java.io.IOException;
 import org.apache.commons.lang3.StringUtils;
 import org.zaproxy.addon.encoder.processors.predefined.DefaultEncodeDecodeProcessor;
 
@@ -28,7 +27,7 @@ public class RemoveWhitespace extends DefaultEncodeDecodeProcessor {
     private static final RemoveWhitespace INSTANCE = new RemoveWhitespace();
 
     @Override
-    protected String processInternal(String value) throws IOException {
+    protected String processInternal(String value) throws Exception {
         return StringUtils.deleteWhitespace(value);
     }
 

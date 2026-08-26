@@ -19,7 +19,6 @@
  */
 package org.zaproxy.addon.encoder.processors.predefined.utility;
 
-import java.io.IOException;
 import java.text.Normalizer;
 import org.zaproxy.addon.encoder.processors.predefined.DefaultEncodeDecodeProcessor;
 
@@ -28,7 +27,7 @@ public class Ascify extends DefaultEncodeDecodeProcessor {
     private static final Ascify INSTANCE = new Ascify();
 
     @Override
-    protected String processInternal(String value) throws IOException {
+    protected String processInternal(String value) throws Exception {
         // Normalize with compatible decomposition, then remove anything non-ASCII
         return Normalizer.normalize(value, Normalizer.Form.NFKD).replaceAll("[^\\p{ASCII}]", "");
     }

@@ -19,7 +19,6 @@
  */
 package org.zaproxy.addon.encoder.processors.predefined.utility;
 
-import java.io.IOException;
 import java.util.Locale;
 import org.zaproxy.addon.encoder.processors.predefined.DefaultEncodeDecodeProcessor;
 
@@ -28,7 +27,7 @@ public class UpperCase extends DefaultEncodeDecodeProcessor {
     private static final UpperCase INSTANCE = new UpperCase();
 
     @Override
-    protected String processInternal(String value) throws IOException {
+    protected String processInternal(String value) throws Exception {
         return value.toUpperCase(Locale.ROOT);
     }
 
