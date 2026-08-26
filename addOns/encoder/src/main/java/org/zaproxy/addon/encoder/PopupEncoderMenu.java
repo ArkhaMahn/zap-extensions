@@ -20,6 +20,8 @@
 package org.zaproxy.addon.encoder;
 
 import java.awt.Component;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -34,11 +36,10 @@ import org.zaproxy.addon.encoder.util.ConvertUtils;
 import org.zaproxy.addon.encoder.util.EncodeDecodeUtils;
 import org.zaproxy.addon.encoder.util.HashUtils;
 import org.zaproxy.zap.extension.ExtensionPopupMenu;
-import org.zaproxy.zap.view.ZapMenuItem;
 
 /**
- * The "Encode/Decode/Hash..." right-click submenu. Hovering shows the in-place Encode, Decode,
- * Hash, and Convert submenus. Clicking the top item opens the Encode/Decode/Hash dialog.
+ * The "Encode/Decode/Hash..." right-click menu. Hovering shows the in-place Encode, Decode, Hash,
+ * and Convert submenus. Clicking the menu opens the Encode/Decode/Hash dialog.
  */
 @SuppressWarnings("serial")
 public class PopupEncoderMenu extends ExtensionPopupMenu {
@@ -51,11 +52,14 @@ public class PopupEncoderMenu extends ExtensionPopupMenu {
         super(Constant.messages.getString("encoder.tools.menu.encdec"));
         setWeight(MenuWeights.MENU_ENCODE_WEIGHT);
 
-        ZapMenuItem dialogItem = new ZapMenuItem("encoder.tools.menu.encdec");
-        dialogItem.addActionListener(e -> dialogAction.run());
-        add(dialogItem);
+        addMouseListener(
+                new MouseAdapter() {
+                    @Override
+                    public void mousePressed(MouseEvent e) {
+                        dialogAction.run();
+                    }
+                });
 
-        addSeparator();
         add(new EncoderSubMenu(msg("encoder.operation.popup.encode"), encodeItems()));
         add(new EncoderSubMenu(msg("encoder.operation.popup.decode"), decodeItems()));
         add(new EncoderSubMenu(msg("encoder.operation.popup.hash"), hashItems()));
